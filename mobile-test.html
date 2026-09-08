@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+ body{margin:0;background:#3a3f4b;font:12px system-ui;display:flex;gap:12px;padding:12px}
+ .phone{width:390px;height:844px;border:none;border-radius:0;background:#000;flex:0 0 auto}
+ .lbl{position:absolute;top:0;left:0;color:#fff}
+</style></head><body>
+<iframe class="phone" id="f1" src="demo.html#prog"></iframe>
+<iframe class="phone" id="f2" src="demo.html#log"></iframe>
+<iframe class="phone" id="f3" src="demo.html#hist"></iframe>
+<script>
+setTimeout(function(){
+  ["f1","f2","f3"].forEach(function(id){
+    var d = document.getElementById(id).contentDocument;
+    var w = document.getElementById(id).clientWidth;
+    var sw = d.documentElement.scrollWidth;
+    var bad = [];
+    d.querySelectorAll("body *").forEach(function(e){
+      var r = e.getBoundingClientRect();
+      if(r.width > 0 && r.right > w + 1) bad.push(e.tagName + "." + e.className + " right=" + Math.round(r.right));
+    });
+    console.log("MOVIL " + id + " ancho=" + w + " scrollWidth=" + sw + " desborde=" + (sw > w) + " elementos=" + bad.length);
+    bad.slice(0,5).forEach(function(b){ console.log("   -> " + b); });
+  });
+}, 1200);
+</script></body></html>

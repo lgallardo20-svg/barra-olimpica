@@ -1,0 +1,1125 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e0f13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Barra">
+<link rel="manifest" href="manifest.json">
+<title>Barra Olímpica</title>
+<style>
+:root{
+  --bg:#0e0f13; --bg2:#15171e; --card:#1b1e27; --card2:#22262f;
+  --line:#2c313d; --txt:#eceef4; --dim:#9aa2b4; --dim2:#6d7686;
+  --acc:#ff6b35; --acc2:#ffa14a; --ok:#3ddc97; --warn:#ffd166; --bad:#ff5d73;
+  --r:14px; --tabh:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--txt);
+  font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  padding-bottom:calc(var(--tabh) + env(safe-area-inset-bottom));
+  overscroll-behavior-y:contain;
+}
+h1,h2,h3{margin:0;font-weight:650;letter-spacing:-.01em}
+h1{font-size:19px}
+h2{font-size:16px}
+h3{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:8px}
+
+header{
+  position:sticky;top:0;z-index:20;background:rgba(14,15,19,.93);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  display:flex;align-items:center;gap:10px;
+}
+header .logo{
+  width:28px;height:28px;border-radius:8px;flex:0 0 auto;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  display:grid;place-items:center;font-size:15px
+}
+main{padding:14px 14px 24px;max-width:660px;margin:0 auto}
+.view{display:none}
+.view.on{display:block}
+
+nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  height:calc(var(--tabh) + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
+  background:rgba(21,23,30,.97);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);display:flex;
+}
+nav button{
+  flex:1;background:none;border:0;color:var(--dim2);font:inherit;font-size:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  padding:0;cursor:pointer;letter-spacing:.02em;font-weight:600
+}
+nav button .ico{font-size:18px;line-height:1}
+nav button.on{color:var(--acc)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:0 0 12px}
+.row{display:flex;gap:10px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.sp{flex:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.muted{color:var(--dim);font-size:13px}
+.tiny{font-size:11.5px;color:var(--dim2);line-height:1.4}
+.mt{margin-top:12px}
+.mono{font-variant-numeric:tabular-nums}
+
+label.fld{display:block;margin:0 0 10px}
+label.fld > span{display:block;font-size:12px;color:var(--dim);margin-bottom:5px;font-weight:600}
+input,select,textarea{
+  width:100%;background:var(--bg2);color:var(--txt);border:1px solid var(--line);
+  border-radius:10px;padding:11px 12px;font:inherit;font-size:16px;
+  font-variant-numeric:tabular-nums;appearance:none
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);background:#191c24}
+select{background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+textarea{min-height:60px;resize:vertical}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  background:var(--card2);color:var(--txt);border:1px solid var(--line);
+  border-radius:11px;padding:11px 14px;font:inherit;font-weight:650;font-size:14px;cursor:pointer;white-space:nowrap
+}
+.btn:active{transform:scale(.985)}
+.btn.pri{background:linear-gradient(135deg,var(--acc),#ff8548);border-color:transparent;color:#fff}
+.btn.ghost{background:none}
+.btn.sm{padding:7px 11px;font-size:12.5px;border-radius:9px}
+.btn.wide{width:100%}
+.btn.danger{color:var(--bad);border-color:#43303a}
+
+.chips{display:flex;gap:7px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  background:var(--card2);border:1px solid var(--line);border-radius:999px;
+  padding:7px 13px;font-size:13px;font-weight:650;color:var(--dim);cursor:pointer;white-space:nowrap
+}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.pill.ok{background:rgba(61,220,151,.15);color:var(--ok)}
+.pill.acc{background:rgba(255,107,53,.16);color:var(--acc2)}
+.pill.w{background:rgba(255,209,102,.14);color:var(--warn)}
+.pill.bad{background:rgba(255,93,115,.14);color:var(--bad)}
+
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:9px 5px;font-size:14px;border-bottom:1px solid var(--line)}
+th{font-size:10.5px;color:var(--dim2);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+th:first-child,td:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+tbody tr.hi{background:rgba(255,107,53,.08)}
+
+.big{font-size:32px;font-weight:700;letter-spacing:-.025em;font-variant-numeric:tabular-nums;line-height:1.05}
+.unit{font-size:14px;color:var(--dim);font-weight:600;margin-left:2px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px;cursor:pointer}
+.stat .k{font-size:10.5px;color:var(--dim2);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:5px}
+.stat .v{font-size:23px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat .s{font-size:11px;color:var(--dim2);margin-top:2px}
+
+.empty{text-align:center;color:var(--dim2);padding:30px 16px;font-size:14px}
+.empty .ico{font-size:32px;display:block;margin-bottom:10px;opacity:.5}
+
+.bar{display:flex;align-items:center;gap:1.5px;height:34px;margin-top:8px;overflow-x:auto;scrollbar-width:none}
+.bar::-webkit-scrollbar{display:none}
+.bar .sleeve{width:18px;height:6px;background:#5b6272;border-radius:2px;flex:0 0 auto}
+.pl{flex:0 0 auto;width:12px;border-radius:2px;display:grid;place-items:center;font-size:8px;font-weight:800;color:#0e0f13}
+.pl.p25{height:34px;background:#e5484d}
+.pl.p20{height:33px;background:#3b82f6;color:#fff}
+.pl.p15{height:30px;background:#eab308}
+.pl.p10{height:26px;background:#22c55e}
+.pl.p5{height:22px;background:#e9edf5}
+.pl.p2{height:18px;background:#8b93a5}
+.pl.p1{height:15px;background:#5b6272;color:#eceef4}
+
+.chart{width:100%;height:158px;display:block;overflow:visible}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart .ln{fill:none;stroke:var(--acc);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.chart .dt{fill:var(--acc);stroke:var(--bg);stroke-width:2}
+.chart .dt2{fill:var(--acc2);opacity:.5}
+.chart text{fill:var(--dim2);font-size:9.5px;font-family:inherit}
+
+.sess{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:var(--card);overflow:hidden}
+.sess > summary{padding:12px 14px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px}
+.sess > summary::-webkit-details-marker{display:none}
+.sess[open] > summary{border-bottom:1px solid var(--line)}
+.sess .body{padding:6px 14px 12px}
+.setline{display:flex;gap:8px;align-items:baseline;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.setline:last-child{border-bottom:0}
+.trk{height:7px;border-radius:4px;background:var(--bg2);overflow:hidden;margin-top:7px}
+.trk i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabh) + 20px + env(safe-area-inset-bottom));
+  background:#e9edf5;color:#11131a;padding:10px 16px;border-radius:999px;font-size:13.5px;font-weight:650;
+  z-index:99;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;box-shadow:0 8px 24px rgba(0,0,0,.45);
+  max-width:88vw;text-align:center
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(-4px)}
+@media (min-width:520px){ .grid4{grid-template-columns:repeat(4,1fr)} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🏋️</div>
+  <h1 id="ttl">Hoy</h1>
+  <div class="sp"></div>
+  <div class="tiny mono" id="hdrRight"></div>
+</header>
+
+<main>
+
+<!-- ============ HOY ============ -->
+<section class="view on" id="v-home">
+  <div class="grid4" id="favStats"></div>
+
+  <div class="card mt">
+    <h3>Calculadora de discos</h3>
+    <div class="row">
+      <input type="number" id="qkg" inputmode="decimal" step="0.5" placeholder="Peso total" style="flex:1">
+      <button class="btn sm" id="qkgUse">Ver</button>
+    </div>
+    <div id="qkgOut"></div>
+  </div>
+
+  <div id="homeLast"></div>
+
+  <button class="btn pri wide mt" data-go="log">＋ Registrar entrenamiento</button>
+</section>
+
+<!-- ============ PORCENTAJES ============ -->
+<section class="view" id="v-pct">
+  <div class="chips" id="pctChips"></div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <div class="tiny" style="margin-bottom:2px">1RM de referencia</div>
+        <div class="big"><span id="pctMaxV">—</span><span class="unit" data-unit>kg</span></div>
+        <div class="tiny" id="pctMaxMeta"></div>
+      </div>
+      <div class="sp"></div>
+      <button class="btn sm" id="pctEdit">Editar</button>
+    </div>
+    <div id="pctEditBox" style="display:none" class="mt">
+      <div class="row">
+        <input type="number" id="pctNew" inputmode="decimal" step="0.5" placeholder="Nuevo 1RM">
+        <input type="date" id="pctNewDate" style="flex:0 0 145px">
+      </div>
+      <div class="row mt">
+        <button class="btn pri sm" id="pctSave">Guardar 1RM</button>
+        <button class="btn ghost sm" id="pctCancel">Cancelar</button>
+      </div>
+      <div class="tiny mt">Se guarda con fecha, así queda en tu historial de progreso.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Tabla de porcentajes</h3>
+    <div class="chips" style="padding-bottom:4px">
+      <button class="chip on" data-step="5">Cada 5%</button>
+      <button class="chip" data-step="2.5">Cada 2.5%</button>
+    </div>
+    <table>
+      <thead><tr><th>%</th><th>Teórico</th><th>A cargar</th><th>Discos / lado</th></tr></thead>
+      <tbody id="pctBody"></tbody>
+    </table>
+    <div class="tiny mt">«A cargar» redondea al peso realmente montable con tu barra y discos (Ajustes).</div>
+  </div>
+
+  <div class="card">
+    <h3>¿Qué porcentaje es este peso?</h3>
+    <div class="row">
+      <input type="number" id="invW" inputmode="decimal" step="0.5" placeholder="Peso" style="flex:1">
+      <div class="big" style="font-size:26px"><span id="invOut">—</span><span class="unit">%</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Estimar 1RM desde una serie</h3>
+    <div class="row">
+      <input type="number" id="e1w" inputmode="decimal" step="0.5" placeholder="Peso">
+      <input type="number" id="e1r" inputmode="numeric" step="1" placeholder="Reps">
+    </div>
+    <div id="e1out" class="mt"></div>
+  </div>
+</section>
+
+<!-- ============ REGISTRAR ============ -->
+<section class="view" id="v-log">
+  <div class="card">
+    <div class="grid2">
+      <label class="fld"><span>Fecha</span><input type="date" id="lgDate"></label>
+      <label class="fld"><span>Movimiento</span><select id="lgLift"></select></label>
+    </div>
+    <div class="row">
+      <label class="fld" style="flex:1"><span>Peso</span><input type="number" id="lgW" inputmode="decimal" step="0.5" placeholder="0"></label>
+      <label class="fld" style="flex:0 0 74px"><span>Reps</span><input type="number" id="lgR" inputmode="numeric" step="1" value="1"></label>
+      <label class="fld" style="flex:0 0 84px"><span>Series</span><input type="number" id="lgS" inputmode="numeric" step="1" value="1"></label>
+      <label class="fld" style="flex:0 0 74px"><span>RPE</span><input type="number" id="lgRpe" inputmode="decimal" step="0.5" placeholder="—"></label>
+    </div>
+    <div class="tiny" id="lgHint" style="min-height:16px"></div>
+    <button class="btn pri wide mt" id="lgAdd">＋ Añadir a la sesión</button>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-bottom:6px">
+      <h3 style="margin:0">Sesión en curso</h3>
+      <div class="sp"></div>
+      <div class="tiny mono" id="lgTon"></div>
+    </div>
+    <div id="lgList"></div>
+    <label class="fld mt"><span>Notas</span><textarea id="lgNote" placeholder="Sensaciones, técnica, molestias…"></textarea></label>
+    <div class="row">
+      <button class="btn pri" id="lgSave" style="flex:1">Guardar sesión</button>
+      <button class="btn ghost danger sm" id="lgClear">Vaciar</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HISTORIAL ============ -->
+<section class="view" id="v-hist">
+  <div class="grid4" id="histStats"></div>
+  <div class="mt" id="histList"></div>
+</section>
+
+<!-- ============ PROGRESO ============ -->
+<section class="view" id="v-prog">
+  <div class="chips" id="progChips"></div>
+  <div class="card">
+    <div class="row">
+      <div>
+        <div class="tiny">Mejor marca</div>
+        <div class="big"><span id="prBest">—</span><span class="unit" data-unit>kg</span></div>
+      </div>
+      <div class="sp"></div>
+      <div style="text-align:right">
+        <div class="tiny">Últimos 90 días</div>
+        <div style="font-size:17px;font-weight:700" id="prDelta">—</div>
+      </div>
+    </div>
+    <svg class="chart mt" id="prChart" viewBox="0 0 320 158" preserveAspectRatio="none">
+      <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ff6b35" stop-opacity=".28"/><stop offset="100%" stop-color="#ff6b35" stop-opacity="0"/>
+      </linearGradient></defs>
+    </svg>
+    <div class="tiny">La línea es tu récord acumulado. Cada punto es un día de entrenamiento.</div>
+  </div>
+
+  <div class="card">
+    <h3>Récords por repeticiones</h3>
+    <table><thead><tr><th>Reps</th><th>Peso</th><th>1RM equiv.</th><th>Fecha</th></tr></thead>
+    <tbody id="prReps"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h3>Volumen por semana</h3>
+    <div id="prVol"></div>
+  </div>
+
+  <div class="card">
+    <h3>Diagnóstico de proporciones</h3>
+    <div class="tiny" style="margin-bottom:10px">Compara tus marcas con los rangos típicos de un halterófilo. Lo que salga bajo es tu limitante probable.</div>
+    <div id="prDiag"></div>
+  </div>
+</section>
+
+<!-- ============ AJUSTES ============ -->
+<section class="view" id="v-set">
+  <div class="card">
+    <h3>Barra y discos</h3>
+    <div class="grid2">
+      <label class="fld"><span>Peso de la barra</span><input type="number" id="stBar" inputmode="decimal" step="0.5"></label>
+      <label class="fld"><span>Collarines (par)</span><input type="number" id="stCol" inputmode="decimal" step="0.5"></label>
+    </div>
+    <label class="fld"><span>Unidad</span>
+      <select id="stUnit"><option value="kg">Kilogramos (kg)</option><option value="lb">Libras (lb)</option></select>
+    </label>
+    <h3 class="mt">Discos disponibles <span class="tiny" style="text-transform:none;letter-spacing:0">— cantidad por lado</span></h3>
+    <div id="stPlates"></div>
+    <div class="row mt">
+      <input type="number" id="stNewP" inputmode="decimal" step="0.25" placeholder="Nuevo disco" style="flex:1">
+      <button class="btn sm" id="stAddP">Añadir</button>
+    </div>
+    <button class="btn pri wide mt" id="stSaveGear">Guardar equipo</button>
+  </div>
+
+  <div class="card">
+    <h3>Movimientos</h3>
+    <div id="stLifts"></div>
+    <div class="row mt">
+      <input type="text" id="stNewL" placeholder="Nuevo movimiento" style="flex:1">
+      <button class="btn sm" id="stAddL">Añadir</button>
+    </div>
+    <div class="tiny mt">La estrella marca los 4 movimientos que ves en «Hoy».</div>
+  </div>
+
+  <div class="card">
+    <h3>Copia de seguridad</h3>
+    <div class="tiny" style="margin-bottom:8px">Tus datos viven solo en este teléfono. Copia este texto y guárdalo donde quieras para no perderlos.</div>
+    <textarea id="stJson" spellcheck="false" style="font-size:11px;min-height:100px"></textarea>
+    <div class="row mt">
+      <button class="btn sm" id="stExport">Generar copia</button>
+      <button class="btn sm" id="stImport">Restaurar</button>
+      <div class="sp"></div>
+      <button class="btn sm ghost danger" id="stWipe">Borrar todo</button>
+    </div>
+  </div>
+  <div class="tiny" style="text-align:center;padding:8px 0 20px">Barra · registro de halterofilia · v1</div>
+</section>
+
+</main>
+
+<nav>
+  <button data-v="home" class="on"><span class="ico">🏠</span>Hoy</button>
+  <button data-v="pct"><span class="ico">％</span>Porcentajes</button>
+  <button data-v="log"><span class="ico">✎</span>Registrar</button>
+  <button data-v="hist"><span class="ico">📖</span>Historial</button>
+  <button data-v="prog"><span class="ico">📈</span>Progreso</button>
+  <button data-v="set"><span class="ico">⚙︎</span>Ajustes</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Barra — seguimiento de halterofilia
+   Datos 100% locales (localStorage). Un solo archivo.
+   ============================================================ */
+
+const KEY = "barra.v1";
+const $  = (s,r)=> (r||document).querySelector(s);
+const $$ = (s,r)=> Array.from((r||document).querySelectorAll(s));
+
+/* ---------- catálogo por defecto ----------
+   ref: rango típico respecto a otro movimiento (base) según
+   literatura de halterofilia. Se usa solo como diagnóstico. */
+const DEFAULT_LIFTS = [
+  {id:"snatch",  n:"Arranque",              en:"Snatch",         g:"Olímpicos", ref:{b:"cj",     lo:.76, hi:.82}},
+  {id:"cj",      n:"Envión (dos tiempos)",  en:"Clean & Jerk",   g:"Olímpicos", ref:null},
+  {id:"clean",   n:"Cargada",               en:"Clean",          g:"Olímpicos", ref:{b:"cj",     lo:1.00,hi:1.06}},
+  {id:"jerk",    n:"Envión desde pecho",    en:"Jerk",           g:"Olímpicos", ref:{b:"cj",     lo:1.00,hi:1.05}},
+  {id:"psnatch", n:"Arranque de potencia",  en:"Power Snatch",   g:"Potencia",  ref:{b:"snatch", lo:.84, hi:.92}},
+  {id:"pclean",  n:"Cargada de potencia",   en:"Power Clean",    g:"Potencia",  ref:{b:"clean",  lo:.84, hi:.92}},
+  {id:"hsnatch", n:"Arranque colgante",     en:"Hang Snatch",    g:"Potencia",  ref:{b:"snatch", lo:.85, hi:.95}},
+  {id:"hclean",  n:"Cargada colgante",      en:"Hang Clean",     g:"Potencia",  ref:{b:"clean",  lo:.85, hi:.95}},
+  {id:"spull",   n:"Tirón de arranque",     en:"Snatch Pull",    g:"Tirones",   ref:{b:"snatch", lo:1.05,hi:1.20}},
+  {id:"cpull",   n:"Tirón de cargada",      en:"Clean Pull",     g:"Tirones",   ref:{b:"clean",  lo:1.05,hi:1.20}},
+  {id:"dead",    n:"Peso muerto",           en:"Deadlift",       g:"Tirones",   ref:{b:"clean",  lo:1.20,hi:1.45}},
+  {id:"fsq",     n:"Sentadilla frontal",    en:"Front Squat",    g:"Fuerza",    ref:{b:"clean",  lo:1.08,hi:1.20}},
+  {id:"bsq",     n:"Sentadilla trasera",    en:"Back Squat",     g:"Fuerza",    ref:{b:"cj",     lo:1.25,hi:1.45}},
+  {id:"ohsq",    n:"Sentadilla de arranque",en:"Overhead Squat", g:"Fuerza",    ref:{b:"snatch", lo:1.00,hi:1.15}},
+  {id:"press",   n:"Press militar",         en:"Strict Press",   g:"Fuerza",    ref:{b:"jerk",   lo:.55, hi:.70}},
+  {id:"ppress",  n:"Push press",            en:"Push Press",     g:"Fuerza",    ref:{b:"jerk",   lo:.75, hi:.88}}
+];
+
+const DEFAULT_STATE = {
+  v: 1,
+  cfg: {
+    unit: "kg",
+    bar: 20,
+    collars: 0,
+    plates: [{w:25,n:2},{w:20,n:2},{w:15,n:1},{w:10,n:1},{w:5,n:1},{w:2.5,n:1},{w:1.25,n:1}],
+    fav: ["snatch","cj","fsq","bsq"]
+  },
+  lifts: DEFAULT_LIFTS.map(l=>({...l})),
+  maxes: {},      // liftId -> [{d:"YYYY-MM-DD", w:Number}]
+  sessions: [],   // {id, d, note, sets:[{l,r,w,rpe}]}
+  draft: {d:null, note:"", sets:[]}
+};
+
+let S = loadState();
+let UI = { pct:"snatch", prog:"snatch", pctStep:5 };
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return structuredClone(DEFAULT_STATE);
+    const d = JSON.parse(raw);
+    const s = structuredClone(DEFAULT_STATE);
+    // fusión conservadora: nunca perder datos por un campo nuevo
+    if(d.cfg)      Object.assign(s.cfg, d.cfg);
+    if(d.lifts && d.lifts.length) s.lifts = d.lifts;
+    if(d.maxes)    s.maxes = d.maxes;
+    if(d.sessions) s.sessions = d.sessions;
+    if(d.draft)    s.draft = d.draft;
+    return s;
+  }catch(e){
+    console.warn("Estado corrupto, empezando de cero", e);
+    return structuredClone(DEFAULT_STATE);
+  }
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ toast("No se pudo guardar 😕"); } }
+
+/* ---------- utilidades ---------- */
+const U    = ()=> S.cfg.unit;
+const lift = id => S.lifts.find(l=>l.id===id) || {id, n:id, g:"Otros", ref:null};
+const today= ()=> new Date().toISOString().slice(0,10);
+const num  = v => { const n = parseFloat(String(v).replace(",", ".")); return isFinite(n)? n : NaN; };
+const fmt  = n => { if(!isFinite(n)) return "—"; const r = Math.round(n*100)/100; return (r%1===0? r.toFixed(0) : r.toFixed(2).replace(/0$/,"")); };
+
+function fmtDate(iso){
+  if(!iso) return "";
+  const [y,m,d] = iso.split("-").map(Number);
+  const MES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  return d + " " + MES[m-1] + (y !== new Date().getFullYear() ? " " + y : "");
+}
+function daysAgo(iso){
+  const ms = Date.parse(iso + "T12:00:00") - Date.parse(today() + "T12:00:00");
+  return Math.round(-ms / 86400000);
+}
+function relDate(iso){
+  const d = daysAgo(iso);
+  if(d === 0) return "hoy";
+  if(d === 1) return "ayer";
+  if(d < 7)   return "hace " + d + " días";
+  if(d < 14)  return "hace 1 semana";
+  if(d < 60)  return "hace " + Math.round(d/7) + " semanas";
+  return "hace " + Math.round(d/30) + " meses";
+}
+let toastT;
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("on"), 2200);
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------- discos ---------- */
+/* Enumera todo lo montable con el inventario y guarda la combinación
+   más simple (menos discos) para cada peso por lado. */
+let LOADABLE = null;
+function buildLoadable(){
+  const plates = S.cfg.plates.filter(p=>p.w>0 && p.n>0).sort((a,b)=>b.w-a.w);
+  const map = new Map([[0, []]]);
+  for(const p of plates){
+    const snapshot = Array.from(map.entries());
+    for(const [sum, combo] of snapshot){
+      let s = sum, c = combo;
+      for(let k=1;k<=p.n;k++){
+        s = Math.round((s + p.w)*100)/100;
+        c = c.concat([p.w]);
+        const prev = map.get(s);
+        if(!prev || prev.length > c.length) map.set(s, c.slice());
+      }
+    }
+  }
+  LOADABLE = Array.from(map.entries()).map(([side,combo])=>({
+    side,
+    total: Math.round((S.cfg.bar + (S.cfg.collars||0) + side*2)*100)/100,
+    combo
+  })).sort((a,b)=>a.total-b.total);
+}
+/* Cómo se carga de verdad una barra: discos más pesados primero.
+   El DP de arriba dice qué pesos son alcanzables; esto elige la forma
+   convencional de montarlos y solo cae al DP si el voraz no cierra. */
+function greedyCombo(side){
+  const inv = S.cfg.plates.filter(p=>p.w>0 && p.n>0)
+    .map(p=>({w:p.w, n:p.n})).sort((a,b)=>b.w-a.w);
+  let rest = side; const out = [];
+  for(const p of inv){
+    while(p.n>0 && rest - p.w >= -1e-9){
+      rest = Math.round((rest - p.w)*100)/100;
+      p.n--; out.push(p.w);
+    }
+  }
+  return Math.abs(rest) < 1e-9 ? out : null;
+}
+function loadable(target){
+  if(!LOADABLE) buildLoadable();
+  if(!LOADABLE.length) return {total:S.cfg.bar, combo:[], exact:false};
+  let best = LOADABLE[0];
+  for(const c of LOADABLE){
+    if(Math.abs(c.total-target) < Math.abs(best.total-target) - 1e-9) best = c;
+  }
+  return {
+    total: best.total,
+    combo: greedyCombo(best.side) || best.combo,
+    exact: Math.abs(best.total-target) < 1e-9
+  };
+}
+function plateClass(w){
+  if(w>=25) return "p25"; if(w>=20) return "p20"; if(w>=15) return "p15";
+  if(w>=10) return "p10"; if(w>=5) return "p5";  if(w>=2.5) return "p2"; return "p1";
+}
+function comboText(combo){
+  if(!combo.length) return "barra sola";
+  const counts = new Map();
+  combo.forEach(w=>counts.set(w,(counts.get(w)||0)+1));
+  return Array.from(counts.entries()).map(([w,c])=> c>1 ? c+"×"+fmt(w) : fmt(w)).join(" + ");
+}
+function barHTML(combo){
+  const p = combo.slice().sort((a,b)=>b-a);
+  const side = p.map(w=>'<div class="pl '+plateClass(w)+'">'+(w>=2.5?fmt(w):"")+"</div>").join("");
+  const rev  = p.slice().reverse().map(w=>'<div class="pl '+plateClass(w)+'">'+(w>=2.5?fmt(w):"")+"</div>").join("");
+  return '<div class="bar"><div class="sleeve"></div>'+rev+
+         '<div style="width:46px;height:7px;background:#5b6272;border-radius:2px;flex:0 0 auto"></div>'+
+         side+'<div class="sleeve"></div></div>';
+}
+
+/* ---------- 1RM ---------- */
+/* Coeficientes de reps para movimientos técnicos: en halterofilia
+   las series largas subestiman mucho el máximo, así que usamos una
+   tabla empírica en lugar de una fórmula lineal. */
+const REP_PCT = {1:1.00, 2:.955, 3:.92, 4:.89, 5:.86, 6:.835, 7:.81, 8:.785, 9:.76, 10:.74};
+const OLY = new Set(["snatch","cj","clean","jerk","psnatch","pclean","hsnatch","hclean"]);
+
+function est1RM(w, r, liftId){
+  if(!isFinite(w) || !isFinite(r) || r<1) return NaN;
+  if(r===1) return w;
+  const tbl = REP_PCT[Math.min(10, Math.round(r))] || (1 - 0.028*r);
+  const table  = w / tbl;
+  const epley  = w * (1 + r/30);
+  const brzy   = w * 36/(37-r);
+  if(OLY.has(liftId)) return table;                 // técnico → tabla
+  return (table + epley + brzy) / 3;                // fuerza → promedio
+}
+function current1RM(liftId){
+  const h = (S.maxes[liftId]||[]).slice().sort((a,b)=>a.d<b.d?1:-1);
+  if(h.length) return {w:h[0].w, d:h[0].d, src:"declarado"};
+  const b = bestFromSessions(liftId);
+  if(b) return {w:Math.round(b.e*2)/2, d:b.d, src:"estimado"};
+  return null;
+}
+function bestFromSessions(liftId){
+  let best = null;
+  for(const s of S.sessions) for(const st of s.sets){
+    if(st.l !== liftId) continue;
+    const e = est1RM(st.w, st.r, liftId);
+    if(!isFinite(e)) continue;
+    if(!best || e > best.e) best = {e, d:s.d, w:st.w, r:st.r};
+  }
+  return best;
+}
+/* Serie temporal: mejor 1RM (real o estimado) por fecha */
+function series(liftId){
+  const m = new Map();
+  for(const e of (S.maxes[liftId]||[])) m.set(e.d, Math.max(m.get(e.d)||0, e.w));
+  for(const s of S.sessions) for(const st of s.sets){
+    if(st.l!==liftId) continue;
+    const e = est1RM(st.w, st.r, liftId);
+    if(isFinite(e)) m.set(s.d, Math.max(m.get(s.d)||0, Math.round(e*2)/2));
+  }
+  return Array.from(m.entries()).map(([d,w])=>({d,w})).sort((a,b)=>a.d<b.d?-1:1);
+}
+function repPRs(liftId){
+  const by = new Map();
+  for(const s of S.sessions) for(const st of s.sets){
+    if(st.l!==liftId) continue;
+    const k = st.r;
+    const cur = by.get(k);
+    if(!cur || st.w > cur.w) by.set(k, {w:st.w, d:s.d, r:st.r});
+  }
+  return Array.from(by.values()).sort((a,b)=>a.r-b.r);
+}
+function isPR(liftId, w, r){
+  for(const s of S.sessions) for(const st of s.sets)
+    if(st.l===liftId && st.r>=r && st.w>=w) return false;
+  return true;
+}
+
+/* ============================================================
+   NAVEGACIÓN
+   ============================================================ */
+const TITLES = {home:"Hoy", pct:"Porcentajes", log:"Registrar", hist:"Historial", prog:"Progreso", set:"Ajustes"};
+function go(v){
+  $$(".view").forEach(s=>s.classList.toggle("on", s.id === "v"+"-"+v));
+  $$("nav button").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
+  $("#ttl").textContent = TITLES[v] || "";
+  window.scrollTo(0,0);
+  render(v);
+}
+$$("nav button").forEach(b=> b.onclick = ()=>go(b.dataset.v));
+document.addEventListener("click", e=>{
+  const g = e.target.closest("[data-go]");
+  if(g) go(g.dataset.go);
+});
+
+function render(v){
+  if(v==="home") renderHome();
+  if(v==="pct")  renderPct();
+  if(v==="log")  renderLog();
+  if(v==="hist") renderHist();
+  if(v==="prog") renderProg();
+  if(v==="set")  renderSet();
+  $$("[data-unit]").forEach(e=>e.textContent = U());
+}
+
+/* ============================================================
+   HOY
+   ============================================================ */
+function renderHome(){
+  const favs = (S.cfg.fav||[]).filter(id=>S.lifts.some(l=>l.id===id));
+  $("#favStats").innerHTML = favs.map(id=>{
+    const L = lift(id), m = current1RM(id);
+    return '<div class="stat" data-fav="'+id+'">'+
+      '<div class="k">'+esc(L.n)+"</div>"+
+      '<div class="v">'+(m? fmt(m.w) : "—")+'<span class="unit">'+(m?U():"")+"</span></div>"+
+      '<div class="s">'+(m? (m.src==="estimado"?"estimado · ":"")+relDate(m.d) : "sin datos")+"</div></div>";
+  }).join("") || '<div class="empty" style="grid-column:1/-1"><span class="ico">🎯</span>Marca tus movimientos favoritos en Ajustes.</div>';
+
+  $$("[data-fav]").forEach(el=> el.onclick = ()=>{ UI.pct = el.dataset.fav; go("pct"); });
+
+  const last = S.sessions.slice().sort((a,b)=>a.d<b.d?1:-1)[0];
+  $("#homeLast").innerHTML = last
+    ? '<div class="card"><div class="row"><h3 style="margin:0">Último entrenamiento</h3><div class="sp"></div>'+
+      '<span class="pill acc">'+relDate(last.d)+"</span></div>"+
+      '<div class="mt">'+sessionBodyHTML(last)+"</div>"+
+      '<div class="tiny mt">'+last.sets.length+" series · "+fmt(tonnage(last))+" "+U()+" de tonelaje</div></div>"
+    : '<div class="card"><div class="empty"><span class="ico">📓</span>Aún no hay entrenamientos.<br>Registra el primero y la app empieza a guiarte.</div></div>';
+
+  drawQuick();
+}
+function tonnage(s){ return s.sets.reduce((t,st)=> t + (st.w||0)*(st.r||0), 0); }
+
+function drawQuick(){
+  const w = num($("#qkg").value);
+  const out = $("#qkgOut");
+  if(!isFinite(w) || w<=0){ out.innerHTML = '<div class="tiny mt">Escribe un peso y te digo qué discos poner en cada lado.</div>'; return; }
+  const L = loadable(w);
+  out.innerHTML = barHTML(L.combo) +
+    '<div class="row mt" style="align-items:baseline">'+
+      '<div class="big" style="font-size:24px">'+fmt(L.total)+'<span class="unit">'+U()+"</span></div>"+
+      '<div class="sp"></div><div class="muted">'+comboText(L.combo)+" por lado</div></div>"+
+    (L.exact ? "" : '<div class="tiny mt">Exacto no se puede montar; lo más cercano es '+fmt(L.total)+" "+U()+".</div>");
+}
+$("#qkg").addEventListener("input", drawQuick);
+$("#qkgUse").onclick = drawQuick;
+
+/* ============================================================
+   PORCENTAJES
+   ============================================================ */
+function liftChips(host, current, onPick){
+  const ordered = S.lifts.slice().sort((a,b)=>{
+    const fa = (S.cfg.fav||[]).indexOf(a.id), fb = (S.cfg.fav||[]).indexOf(b.id);
+    const ra = fa<0? 99 : fa, rb = fb<0? 99 : fb;
+    return ra-rb;
+  });
+  host.innerHTML = ordered.map(l=>
+    '<button class="chip'+(l.id===current?" on":"")+'" data-l="'+l.id+'">'+esc(l.n)+"</button>").join("");
+  $$("[data-l]", host).forEach(b=> b.onclick = ()=>onPick(b.dataset.l));
+}
+
+function renderPct(){
+  liftChips($("#pctChips"), UI.pct, id=>{ UI.pct = id; renderPct(); });
+  const m = current1RM(UI.pct);
+  $("#pctMaxV").textContent = m? fmt(m.w) : "—";
+  $("#pctMaxMeta").textContent = m
+    ? (m.src==="estimado" ? "estimado a partir de tus series · "+fmtDate(m.d) : "registrado el "+fmtDate(m.d))
+    : "define tu 1RM para ver la tabla";
+  $("#pctEditBox").style.display = "none";
+  $("#pctNew").value = m? m.w : "";
+  $("#pctNewDate").value = today();
+
+  const body = $("#pctBody");
+  if(!m){ body.innerHTML = '<tr><td colspan="4"><div class="empty" style="padding:18px"><span class="ico">📏</span>Sin 1RM todavía</div></td></tr>'; }
+  else{
+    const step = UI.pctStep, rows = [];
+    for(let p=105; p>=40; p-=step){
+      const th = m.w*p/100, L = loadable(th);
+      rows.push('<tr class="'+([100,90,80,70].includes(p)?"hi":"")+'">'+
+        "<td><b>"+fmt(p)+"%</b></td><td>"+fmt(th)+"</td><td><b>"+fmt(L.total)+"</b></td>"+
+        '<td style="font-size:12px;color:var(--dim)">'+comboText(L.combo)+"</td></tr>");
+    }
+    body.innerHTML = rows.join("");
+  }
+  drawInv();
+  drawEst();
+}
+$$("[data-step]").forEach(b=> b.onclick = ()=>{
+  UI.pctStep = parseFloat(b.dataset.step);
+  $$("[data-step]").forEach(x=>x.classList.toggle("on", x===b));
+  renderPct();
+});
+$("#pctEdit").onclick  = ()=>{ const box = $("#pctEditBox"); box.style.display = box.style.display==="none"?"block":"none"; };
+$("#pctCancel").onclick= ()=>{ $("#pctEditBox").style.display = "none"; };
+$("#pctSave").onclick  = ()=>{
+  const w = num($("#pctNew").value), d = $("#pctNewDate").value || today();
+  if(!isFinite(w) || w<=0){ toast("Peso no válido"); return; }
+  (S.maxes[UI.pct] = S.maxes[UI.pct] || []).push({d, w});
+  save(); renderPct(); toast("1RM guardado: "+fmt(w)+" "+U());
+};
+function drawInv(){
+  const w = num($("#invW").value), m = current1RM(UI.pct);
+  $("#invOut").textContent = (isFinite(w) && m && m.w>0) ? fmt(Math.round(w/m.w*1000)/10) : "—";
+}
+$("#invW").addEventListener("input", drawInv);
+
+function drawEst(){
+  const w = num($("#e1w").value), r = num($("#e1r").value), out = $("#e1out");
+  if(!isFinite(w) || !isFinite(r) || r<1){ out.innerHTML = '<div class="tiny">Ej. 3 reps con 100 '+U()+" → tu 1RM aproximado.</div>"; return; }
+  const e = est1RM(w, r, UI.pct), L = loadable(e);
+  /* En los olímpicos las series largas se limitan por técnica, no por
+     fuerza máxima: pasado 3 reps la estimación deja de significar nada. */
+  const lim = OLY.has(UI.pct) ? 3 : 5;
+  const warn = r>lim ? '<div class="tiny mt"><span class="pill w">ojo</span> '+
+    (OLY.has(UI.pct)
+      ? "En movimientos olímpicos, más de 3 reps mide técnica y aguante, no tu máximo. Tómalo como orientación."
+      : "Con más de 5 reps la estimación pierde fiabilidad.")+"</div>" : "";
+  out.innerHTML = '<div class="row" style="align-items:baseline"><div class="big" style="font-size:26px">'+fmt(Math.round(e*2)/2)+
+    '<span class="unit">'+U()+'</span></div><div class="sp"></div><div class="muted">a cargar: '+fmt(L.total)+" "+U()+"</div></div>"+
+    '<div class="tiny mt">'+fmt(w)+" × "+fmt(r)+" ≈ "+fmt(Math.round(r>10?74:(REP_PCT[Math.round(r)]||.74)*100))+"% de tu máximo"+
+    (OLY.has(UI.pct)?" (tabla para movimientos técnicos)":" (promedio de tabla, Epley y Brzycki)")+"</div>"+warn+
+    '<button class="btn sm mt" id="e1apply">Guardar como 1RM de '+esc(lift(UI.pct).n)+"</button>";
+  const btn = $("#e1apply");
+  if(btn) btn.onclick = ()=>{
+    (S.maxes[UI.pct] = S.maxes[UI.pct] || []).push({d:today(), w:Math.round(e*2)/2});
+    save(); renderPct(); toast("1RM actualizado");
+  };
+}
+$("#e1w").addEventListener("input", drawEst);
+$("#e1r").addEventListener("input", drawEst);
+
+/* ============================================================
+   REGISTRAR
+   ============================================================ */
+function liftOptions(sel){
+  const groups = {};
+  S.lifts.forEach(l=> (groups[l.g||"Otros"] = groups[l.g||"Otros"]||[]).push(l));
+  sel.innerHTML = Object.entries(groups).map(([g,ls])=>
+    "<optgroup label=\""+esc(g)+"\">"+ls.map(l=>'<option value="'+l.id+'">'+esc(l.n)+"</option>").join("")+"</optgroup>").join("");
+}
+function renderLog(){
+  if(!S.draft) S.draft = {d:null, note:"", sets:[]};
+  liftOptions($("#lgLift"));
+  $("#lgDate").value = S.draft.d || today();
+  $("#lgNote").value = S.draft.note || "";
+  if(S.draft.sets.length) $("#lgLift").value = S.draft.sets[S.draft.sets.length-1].l;
+  drawDraft();
+  drawHint();
+}
+function drawHint(){
+  const id = $("#lgLift").value, w = num($("#lgW").value), r = num($("#lgR").value);
+  const m = current1RM(id), h = $("#lgHint");
+  if(!isFinite(w) || w<=0){ h.innerHTML = m? "1RM actual: <b>"+fmt(m.w)+" "+U()+"</b>" : "Sin 1RM para este movimiento."; return; }
+  const L = loadable(w);
+  let s = "";
+  if(m && m.w>0) s += "<b>"+fmt(Math.round(w/m.w*1000)/10)+"%</b> de tu 1RM · ";
+  s += "discos: "+comboText(L.combo);
+  if(!L.exact) s += " (⚠ "+fmt(w)+" no es montable, lo más cerca es "+fmt(L.total)+")";
+  if(isFinite(r) && r>=1 && isPR(id, w, r)) s += ' &nbsp;<span class="pill ok">posible PR</span>';
+  h.innerHTML = s;
+}
+["#lgW","#lgR","#lgLift"].forEach(s=> $(s).addEventListener("input", drawHint));
+$("#lgLift").addEventListener("change", drawHint);
+
+$("#lgAdd").onclick = ()=>{
+  const l = $("#lgLift").value, w = num($("#lgW").value), r = num($("#lgR").value)||1;
+  const sets = Math.max(1, Math.round(num($("#lgS").value)||1)), rpe = num($("#lgRpe").value);
+  if(!isFinite(w) || w<=0){ toast("Falta el peso"); return; }
+  S.draft.d = $("#lgDate").value || today();
+  for(let i=0;i<sets;i++) S.draft.sets.push({l, w, r, rpe: isFinite(rpe)? rpe : null});
+  save(); drawDraft();
+  toast(sets>1 ? sets+" series añadidas" : "Serie añadida");
+  $("#lgW").focus();
+};
+function drawDraft(){
+  const list = $("#lgList"), sets = S.draft.sets;
+  if(!sets.length){ list.innerHTML = '<div class="empty" style="padding:20px"><span class="ico">➕</span>Añade tus series arriba</div>'; $("#lgTon").textContent = ""; }
+  else{
+    list.innerHTML = sets.map((st,i)=>{
+      const m = current1RM(st.l);
+      return '<div class="setline"><b style="flex:0 0 auto">'+fmt(st.w)+" "+U()+"</b>"+
+        '<span class="muted">× '+fmt(st.r)+"</span>"+
+        '<span class="tiny">'+esc(lift(st.l).n)+'</span><div class="sp"></div>'+
+        (m&&m.w>0? '<span class="tiny mono">'+fmt(Math.round(st.w/m.w*100))+"%</span>" : "")+
+        (st.rpe? '<span class="pill acc">RPE '+fmt(st.rpe)+"</span>" : "")+
+        '<button class="btn sm ghost danger" data-del="'+i+'" style="padding:3px 8px">✕</button></div>';
+    }).join("");
+    $$("[data-del]").forEach(b=> b.onclick = ()=>{ S.draft.sets.splice(+b.dataset.del,1); save(); drawDraft(); });
+    $("#lgTon").textContent = sets.length+" series · "+fmt(sets.reduce((t,s)=>t+s.w*s.r,0))+" "+U();
+  }
+}
+$("#lgNote").addEventListener("input", ()=>{ S.draft.note = $("#lgNote").value; save(); });
+$("#lgDate").addEventListener("change", ()=>{ S.draft.d = $("#lgDate").value; save(); });
+
+$("#lgSave").onclick = ()=>{
+  if(!S.draft.sets.length){ toast("La sesión está vacía"); return; }
+  const prs = [];
+  for(const st of S.draft.sets) if(isPR(st.l, st.w, st.r)) prs.push(lift(st.l).n+" "+fmt(st.w)+"×"+fmt(st.r));
+  S.sessions.push({
+    id: "s"+S.sessions.length+"_"+S.draft.d+"_"+S.draft.sets.length,
+    d: S.draft.d || today(),
+    note: S.draft.note || "",
+    sets: S.draft.sets.slice()
+  });
+  S.draft = {d:null, note:"", sets:[]};
+  save(); renderLog();
+  toast(prs.length ? "¡Guardado! PR: "+prs[0] : "Sesión guardada 💪");
+};
+$("#lgClear").onclick = ()=>{
+  if(!S.draft.sets.length) return;
+  if(!confirm("¿Vaciar la sesión en curso?")) return;
+  S.draft = {d:null, note:"", sets:[]}; save(); renderLog();
+};
+
+/* ============================================================
+   HISTORIAL
+   ============================================================ */
+function sessionBodyHTML(s){
+  const byLift = new Map();
+  s.sets.forEach(st=>{
+    const k = st.l+"|"+st.w+"|"+st.r+"|"+(st.rpe||"");
+    byLift.set(k, (byLift.get(k)||0)+1);
+  });
+  return Array.from(byLift.entries()).map(([k,c])=>{
+    const [l,w,r,rpe] = k.split("|");
+    return '<div class="setline"><span style="flex:0 0 auto"><b>'+esc(lift(l).n)+"</b></span>"+
+      '<div class="sp"></div><span class="mono">'+c+"×"+fmt(+r)+" @ "+fmt(+w)+" "+U()+"</span>"+
+      (rpe? '<span class="pill acc">RPE '+rpe+"</span>":"")+"</div>";
+  }).join("");
+}
+function renderHist(){
+  const ss = S.sessions.slice().sort((a,b)=>a.d<b.d?1:-1);
+  const d30 = ss.filter(s=>daysAgo(s.d)<=30);
+  $("#histStats").innerHTML =
+    '<div class="stat"><div class="k">Sesiones</div><div class="v">'+ss.length+'</div><div class="s">'+d30.length+" en 30 días</div></div>"+
+    '<div class="stat"><div class="k">Tonelaje 30d</div><div class="v">'+fmt(Math.round(d30.reduce((t,s)=>t+tonnage(s),0)))+'</div><div class="s">'+U()+" levantados</div></div>"+
+    '<div class="stat"><div class="k">Series 30d</div><div class="v">'+d30.reduce((t,s)=>t+s.sets.length,0)+'</div><div class="s">total</div></div>'+
+    '<div class="stat"><div class="k">Racha</div><div class="v">'+(ss.length? relDate(ss[0].d).replace("hace ","") : "—")+'</div><div class="s">último</div></div>';
+
+  $("#histList").innerHTML = ss.length ? ss.map(s=>
+    '<details class="sess"><summary><b>'+fmtDate(s.d)+"</b>"+
+      '<span class="tiny">'+relDate(s.d)+'</span><div class="sp"></div>'+
+      '<span class="tiny mono">'+s.sets.length+" ser · "+fmt(Math.round(tonnage(s)))+" "+U()+"</span></summary>"+
+      '<div class="body">'+sessionBodyHTML(s)+
+      (s.note? '<div class="tiny mt" style="font-style:italic">“'+esc(s.note)+'”</div>':"")+
+      '<button class="btn sm ghost danger mt" data-dels="'+esc(s.id)+'">Eliminar sesión</button></div></details>').join("")
+    : '<div class="empty"><span class="ico">📖</span>Tu historial aparecerá aquí.</div>';
+
+  $$("[data-dels]").forEach(b=> b.onclick = ()=>{
+    if(!confirm("¿Eliminar esta sesión?")) return;
+    S.sessions = S.sessions.filter(x=>x.id !== b.dataset.dels);
+    save(); renderHist(); toast("Sesión eliminada");
+  });
+}
+
+/* ============================================================
+   PROGRESO
+   ============================================================ */
+function renderProg(){
+  liftChips($("#progChips"), UI.prog, id=>{ UI.prog = id; renderProg(); });
+  const sr = series(UI.prog);
+  const best = sr.reduce((m,p)=> p.w>m? p.w : m, 0);
+  $("#prBest").textContent = best? fmt(best) : "—";
+
+  /* Comparamos el mejor de los últimos 90 días contra el mejor de antes:
+     un día flojo no debe leerse como retroceso. */
+  const mx    = arr => arr.reduce((m,p)=> p.w>m? p.w : m, 0);
+  const recent= sr.filter(p=>daysAgo(p.d) <  90);
+  const older = sr.filter(p=>daysAgo(p.d) >= 90);
+  const ref = older.length? mx(older) : (sr.length? sr[0].w : 0);
+  const now = recent.length? mx(recent) : ref;
+  const dl  = now - ref;
+  $("#prDelta").innerHTML = sr.length<2 ? '<span class="muted">—</span>'
+    : '<span style="color:'+(dl>0?"var(--ok)":dl<0?"var(--bad)":"var(--dim)")+'">'+(dl>0?"+":"")+fmt(Math.round(dl*10)/10)+" "+U()+"</span>";
+
+  drawChart(sr);
+
+  const prs = repPRs(UI.prog);
+  $("#prReps").innerHTML = prs.length ? prs.map(p=>
+    "<tr><td><b>"+fmt(p.r)+"</b></td><td>"+fmt(p.w)+" "+U()+"</td><td>"+fmt(Math.round(est1RM(p.w,p.r,UI.prog)*2)/2)+
+    '</td><td style="font-size:12px;color:var(--dim)">'+fmtDate(p.d)+"</td></tr>").join("")
+    : '<tr><td colspan="4"><div class="empty" style="padding:16px">Registra series para ver tus récords</div></td></tr>';
+
+  // volumen semanal (últimas 8 semanas)
+  const weeks = new Map();
+  for(const s of S.sessions){
+    const d = daysAgo(s.d); if(d>56 || d<0) continue;
+    const wk = Math.floor(d/7);
+    const t = s.sets.filter(st=>st.l===UI.prog).reduce((a,st)=>a+st.w*st.r,0);
+    if(t>0) weeks.set(wk, (weeks.get(wk)||0)+t);
+  }
+  const maxW = Math.max(1, ...weeks.values());
+  $("#prVol").innerHTML = weeks.size ? Array.from({length:8},(_,i)=>7-i).map(wk=>{
+    const t = weeks.get(wk)||0;
+    return '<div style="margin-bottom:8px"><div class="row"><span class="tiny">'+
+      (wk===0?"esta semana":"hace "+wk+" sem")+'</span><div class="sp"></div><span class="tiny mono">'+
+      (t? fmt(Math.round(t))+" "+U() : "—")+'</span></div><div class="trk"><i style="width:'+(t/maxW*100)+'%"></i></div></div>';
+  }).join("") : '<div class="empty" style="padding:16px">Sin volumen registrado en 8 semanas</div>';
+
+  drawDiag();
+}
+function drawChart(sr){
+  const svg = $("#prChart"), H = 158, pad = {t:12,r:8,b:18,l:30};
+  /* El ancho del viewBox sigue al ancho real para que nada se deforme. */
+  const W = Math.max(260, Math.round(svg.getBoundingClientRect().width) || 320);
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  const defs = svg.querySelector("defs").outerHTML;
+  if(sr.length < 2){
+    svg.innerHTML = defs + '<text x="160" y="80" text-anchor="middle" fill="#6d7686">Necesitas al menos 2 registros</text>';
+    return;
+  }
+  const xs = sr.map(p=>Date.parse(p.d+"T12:00:00"));
+  const x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const ys = sr.map(p=>p.w);
+  let y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const padY = Math.max(2.5, (y1-y0)*0.15); y0 -= padY; y1 += padY;
+  const X = v => pad.l + (x1===x0? (W-pad.l-pad.r)/2 : (v-x0)/(x1-x0)*(W-pad.l-pad.r));
+  const Y = v => pad.t + (1-(v-y0)/(y1-y0))*(H-pad.t-pad.b);
+
+  let g = "";
+  for(let i=0;i<=3;i++){
+    const v = y0 + (y1-y0)*i/3, y = Y(v);
+    g += '<line class="gl" x1="'+pad.l+'" y1="'+y.toFixed(1)+'" x2="'+(W-pad.r)+'" y2="'+y.toFixed(1)+'"/>'+
+         '<text x="'+(pad.l-5)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end">'+Math.round(v)+"</text>";
+  }
+  /* La línea es el récord acumulado (nunca baja); los puntos son cada
+     día real, para que se vea también la variación del entrenamiento. */
+  let run = -Infinity;
+  const rec = sr.map(p=>{ run = Math.max(run, p.w); return {d:p.d, w:run}; });
+  const px  = p => X(Date.parse(p.d+"T12:00:00")).toFixed(1);
+  const line = "M" + rec.map(p=> px(p)+","+Y(p.w).toFixed(1)).join(" L");
+  const area = line + " L"+X(x1).toFixed(1)+","+Y(y0).toFixed(1)+" L"+X(x0).toFixed(1)+","+Y(y0).toFixed(1)+" Z";
+  const dots = sr.map(p=>'<circle class="dt2" cx="'+px(p)+'" cy="'+Y(p.w).toFixed(1)+'" r="2.4"/>').join("")
+    + '<circle class="dt" cx="'+px(rec[rec.length-1])+'" cy="'+Y(rec[rec.length-1].w).toFixed(1)+'" r="4"/>';
+  const labels = '<text x="'+pad.l+'" y="'+(H-4)+'">'+fmtDate(sr[0].d)+"</text>"+
+                 '<text x="'+(W-pad.r)+'" y="'+(H-4)+'" text-anchor="end">'+fmtDate(sr[sr.length-1].d)+"</text>";
+  svg.innerHTML = defs + g + '<path class="ar" fill="url(#g1)" d="'+area+'"/><path class="ln" d="'+line+'"/>' + dots + labels;
+}
+function drawDiag(){
+  const rows = S.lifts.filter(l=>l.ref).map(l=>{
+    const me = current1RM(l.id), base = current1RM(l.ref.b);
+    if(!me || !base || !base.w) return null;
+    const ratio = me.w/base.w;
+    const lo = l.ref.lo, hi = l.ref.hi;
+    let cls = "ok", txt = "en rango";
+    if(ratio < lo){ cls = "bad"; txt = "bajo"; }
+    else if(ratio > hi){ cls = "w"; txt = "alto"; }
+    const targetLo = base.w*lo, targetHi = base.w*hi;
+    return {l, ratio, cls, txt, targetLo, targetHi, base};
+  }).filter(Boolean).sort((a,b)=>a.ratio/a.l.ref.lo - b.ratio/b.l.ref.lo);
+
+  if(!rows.length){
+    $("#prDiag").innerHTML = '<div class="empty" style="padding:16px">Registra al menos dos movimientos relacionados (p. ej. Envión y Sentadilla frontal) para ver el diagnóstico.</div>';
+    return;
+  }
+  $("#prDiag").innerHTML = rows.map(r=>
+    '<div style="margin-bottom:12px"><div class="row">'+
+      "<b>"+esc(r.l.n)+'</b><span class="pill '+r.cls+'">'+r.txt+"</span><div class=\"sp\"></div>"+
+      '<span class="tiny mono">'+Math.round(r.ratio*100)+"% de "+esc(lift(r.l.ref.b).n)+"</span></div>"+
+      '<div class="tiny">rango típico '+Math.round(r.l.ref.lo*100)+"–"+Math.round(r.l.ref.hi*100)+"% → "+
+      fmt(Math.round(r.targetLo))+"–"+fmt(Math.round(r.targetHi))+" "+U()+"</div></div>").join("") +
+    '<div class="tiny mt">'+(rows[0].cls==="bad"
+      ? "Tu punto débil más claro parece <b>"+esc(rows[0].l.n)+"</b>: darle prioridad debería desbloquear el resto."
+      : "Tus proporciones están equilibradas. Progresa con la carga general.")+"</div>";
+}
+
+/* ============================================================
+   AJUSTES
+   ============================================================ */
+function renderSet(){
+  $("#stBar").value  = S.cfg.bar;
+  $("#stCol").value  = S.cfg.collars || 0;
+  $("#stUnit").value = S.cfg.unit;
+  $("#stPlates").innerHTML = S.cfg.plates.slice().sort((a,b)=>b.w-a.w).map((p,i)=>
+    '<div class="row" style="margin-bottom:8px"><div class="pl '+plateClass(p.w)+'" style="width:14px;height:20px"></div>'+
+    '<b class="mono" style="flex:0 0 56px">'+fmt(p.w)+" "+U()+"</b>"+
+    '<input type="number" data-pn="'+p.w+'" value="'+p.n+'" inputmode="numeric" step="1" min="0" style="flex:1">'+
+    '<button class="btn sm ghost danger" data-pd="'+p.w+'" style="padding:6px 10px">✕</button></div>').join("");
+
+  $$("[data-pd]").forEach(b=> b.onclick = ()=>{
+    S.cfg.plates = S.cfg.plates.filter(p=>String(p.w)!==b.dataset.pd);
+    LOADABLE = null; save(); renderSet();
+  });
+
+  $("#stLifts").innerHTML = S.lifts.map(l=>{
+    const fav = (S.cfg.fav||[]).includes(l.id);
+    const m = current1RM(l.id);
+    return '<div class="row" style="margin-bottom:8px">'+
+      '<button class="btn sm ghost" data-favt="'+l.id+'" style="padding:4px 8px;'+(fav?"color:var(--acc2)":"color:var(--dim2)")+'">'+(fav?"★":"☆")+"</button>"+
+      "<div style=\"flex:1;min-width:0\"><div style=\"font-weight:600\">"+esc(l.n)+"</div>"+
+      '<div class="tiny">'+esc(l.en||"")+(m? " · "+fmt(m.w)+" "+U() : "")+"</div></div>"+
+      '<button class="btn sm ghost danger" data-ldel="'+l.id+'" style="padding:6px 10px">✕</button></div>';
+  }).join("");
+
+  $$("[data-favt]").forEach(b=> b.onclick = ()=>{
+    const id = b.dataset.favt;
+    const f = S.cfg.fav = S.cfg.fav || [];
+    const i = f.indexOf(id);
+    if(i>=0) f.splice(i,1);
+    else { if(f.length>=4) f.shift(); f.push(id); }
+    save(); renderSet();
+  });
+  $$("[data-ldel]").forEach(b=> b.onclick = ()=>{
+    const id = b.dataset.ldel;
+    const used = S.sessions.some(s=>s.sets.some(st=>st.l===id)) || (S.maxes[id]||[]).length;
+    if(used && !confirm("Tienes datos guardados de este movimiento. ¿Eliminarlo de la lista? (los datos quedan en el historial)")) return;
+    S.lifts = S.lifts.filter(l=>l.id!==id);
+    S.cfg.fav = (S.cfg.fav||[]).filter(x=>x!==id);
+    save(); renderSet();
+  });
+}
+$("#stAddP").onclick = ()=>{
+  const w = num($("#stNewP").value);
+  if(!isFinite(w) || w<=0){ toast("Peso no válido"); return; }
+  if(S.cfg.plates.some(p=>p.w===w)){ toast("Ya está en la lista"); return; }
+  S.cfg.plates.push({w, n:1}); LOADABLE = null; save(); $("#stNewP").value = ""; renderSet();
+};
+$("#stAddL").onclick = ()=>{
+  const n = $("#stNewL").value.trim();
+  if(!n){ toast("Escribe un nombre"); return; }
+  const id = "c"+Date.now().toString(36);
+  S.lifts.push({id, n, en:"", g:"Míos", ref:null});
+  save(); $("#stNewL").value = ""; renderSet(); toast("Movimiento añadido");
+};
+$("#stSaveGear").onclick = ()=>{
+  const bar = num($("#stBar").value), col = num($("#stCol").value);
+  if(!isFinite(bar) || bar<=0){ toast("Peso de barra no válido"); return; }
+  S.cfg.bar = bar;
+  S.cfg.collars = isFinite(col)? col : 0;
+  S.cfg.unit = $("#stUnit").value;
+  $$("[data-pn]").forEach(inp=>{
+    const p = S.cfg.plates.find(x=>String(x.w)===inp.dataset.pn);
+    if(p) p.n = Math.max(0, Math.round(num(inp.value)||0));
+  });
+  LOADABLE = null; save(); renderSet();
+  $$("[data-unit]").forEach(e=>e.textContent = U());
+  toast("Equipo guardado");
+};
+$("#stExport").onclick = ()=>{
+  $("#stJson").value = JSON.stringify(S);
+  $("#stJson").select();
+  toast("Copia generada — cópiala y guárdala");
+};
+$("#stImport").onclick = ()=>{
+  const raw = $("#stJson").value.trim();
+  if(!raw){ toast("Pega primero una copia"); return; }
+  try{
+    const d = JSON.parse(raw);
+    if(!d || typeof d !== "object" || !("sessions" in d || "maxes" in d)) throw new Error("formato");
+    if(!confirm("Esto reemplaza todos tus datos actuales. ¿Continuar?")) return;
+    localStorage.setItem(KEY, JSON.stringify(d));
+    S = loadState(); LOADABLE = null;
+    go("home"); toast("Datos restaurados");
+  }catch(e){ toast("Copia no válida"); }
+};
+$("#stWipe").onclick = ()=>{
+  if(!confirm("Se borrarán TODOS tus datos de este teléfono. ¿Seguro?")) return;
+  if(!confirm("Última confirmación: esto no se puede deshacer.")) return;
+  localStorage.removeItem(KEY);
+  S = structuredClone(DEFAULT_STATE); LOADABLE = null;
+  go("home"); toast("Todo borrado");
+};
+
+/* ============================================================
+   ARRANQUE
+   ============================================================ */
+buildLoadable();
+if(!S.maxes.snatch && !S.sessions.length){
+  // primer arranque: sugerir empezar por porcentajes
+  UI.pct = "snatch";
+}
+go("home");
+
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
