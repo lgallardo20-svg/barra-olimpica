@@ -242,10 +242,13 @@ tbody tr.hi{background:rgba(255,107,53,.08)}
 
   <div class="card">
     <h3>Estimar 1RM desde una serie</h3>
-    <div class="row">
-      <input type="number" id="e1w" inputmode="decimal" step="0.5" placeholder="Peso">
-      <input type="number" id="e1r" inputmode="numeric" step="1" placeholder="Reps">
-      <input type="number" id="e1rpe" inputmode="decimal" step="0.5" min="5" max="10" placeholder="RPE">
+    <div class="row" style="align-items:flex-end">
+      <label class="fld" style="flex:1;margin-bottom:0"><span>Peso</span>
+        <input type="number" id="e1w" inputmode="decimal" step="0.5" placeholder="0"></label>
+      <label class="fld" style="flex:0 0 72px;margin-bottom:0"><span>Reps</span>
+        <input type="number" id="e1r" inputmode="numeric" step="1" placeholder="0"></label>
+      <label class="fld" style="flex:0 0 76px;margin-bottom:0"><span>RPE</span>
+        <input type="number" id="e1rpe" inputmode="decimal" step="0.5" min="5" max="10" placeholder="—"></label>
     </div>
     <div class="tiny">El RPE afina mucho el resultado: 10 = no daba ni una más,
       9 = te quedaba 1, 8 = te quedaban 2, 7 = te quedaban 3.</div>
@@ -1073,7 +1076,7 @@ function drawDiag(){
 /* ============================================================
    AJUSTES
    ============================================================ */
-const APP_VER = "2026.09.09";
+const APP_VER = "2026.09.09-2";
 function renderSet(){
   $("#stVer").textContent = "versión " + APP_VER;
   $("#stUpd").onclick = ()=> buscarActualizacion($("#stUpd"));
