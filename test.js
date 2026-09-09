@@ -56,6 +56,29 @@
   ok("rango de 3 reps es +-3%", Math.abs(rgT.hi/rgT.e - 1.03) < 1e-9, (rgT.hi/rgT.e).toFixed(4));
   near("fuerza promedia 3 formulas", est1RM(100, 5, "bsq"),
        (100/REP_PCT[5] + 100*(1+5/30) + 100*36/32) / 3, 1e-9);
+
+  // ---- RPE: repeticiones en reserva ----
+  eq("RPE 10 = serie al limite",  est1RM(145, 3, "bsq", 10), est1RM(145, 3, "bsq"));
+  eq("sin RPE = al limite",       est1RM(145, 3, "bsq", NaN), est1RM(145, 3, "bsq"));
+  ok("RPE 8 estima mas que RPE 10", est1RM(145,3,"bsq",8) > est1RM(145,3,"bsq",10));
+  ok("RPE 7 estima mas que RPE 8",  est1RM(145,3,"bsq",7) > est1RM(145,3,"bsq",8));
+  eq("RPE 8 en 3 reps = 5 reps al limite", effReps(3, 8, "bsq"), 5);
+  eq("fuerza: RIR completo",      effReps(3, 8, "bsq"), 5);
+  eq("olimpico: la mitad del RIR", effReps(3, 8, "snatch"), 4);
+  near("tabla RTS: 3 reps a RPE 8 = 86.3%", 145 / est1RM(145,3,"bsq",8), 0.863, 0.006);
+  // un single a RPE 8 no es tu maximo
+  ok("single a RPE 8 < maximo",   est1RM(100, 1, "bsq", 8) > 100);
+  eq("single a RPE 10 = maximo",  est1RM(100, 1, "bsq", 10), 100);
+  // interpolacion con reps fraccionarias
+  ok("interpola reps fraccionarias", isFinite(est1RM(80, 3, "snatch", 7)),
+     est1RM(80,3,"snatch",7).toFixed(1));
+  ok("el RPE estrecha el rango",
+     est1RMRange(145,3,"bsq",8).hi/est1RMRange(145,3,"bsq",8).e <
+     est1RMRange(145,3,"bsq").hi/est1RMRange(145,3,"bsq").e);
+  // el RPE guardado en cada serie debe llegar al calculo
+  S.sessions = [{id:"t", d: today(), note:"", sets:[{l:"bsq", w:145, r:3, rpe:8}]}];
+  near("el RPE de la sesion cuenta", bestFromSessions("bsq").e, est1RM(145,3,"bsq",8), 1e-9);
+  S.sessions = [];
   ok("mas reps, mas 1RM",     est1RM(100, 5, "bsq") > est1RM(100, 3, "bsq"));
 
   // ---- 1RM declarado y porcentajes ----
@@ -162,9 +185,10 @@
   S.maxes.snatch = [{d:"2026-05-01", w:88}, {d: today(), w:95}];
   S.sessions.push({id:"flojo", d: today(), note:"", sets:[{l:"snatch", w:60, r:1, rpe:null}]});
   go("prog");
-  ok("delta 90d positivo",   $("#prDelta").textContent.indexOf("+9") >= 0, $("#prDelta").textContent);
+  ok("delta 90d positivo",   $("#prDelta").textContent.indexOf("+15.5") >= 0, $("#prDelta").textContent);
   // el doble de 90 kg estima 97: por encima del 95 declarado, y el dia flojo no baja nada
-  eq("mejor marca ignora el dia flojo", $("#prBest").textContent, "97");
+  // 90x2 a RPE 8 en arranque equivale a un triple al limite: 103.5 kg
+  eq("mejor marca ignora el dia flojo", $("#prBest").textContent, "103.5");
 
   // ---- navegación completa sin errores ----
   ["home","pct","log","hist","prog","set"].forEach(v => {

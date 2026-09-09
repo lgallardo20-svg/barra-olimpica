@@ -30,6 +30,11 @@ Dos decisiones que conviene conocer:
   olímpicos usan su propia tabla y muestran un rango, no un número exacto. En
   sentadillas y press se sigue promediando la tabla de fuerza con Epley y Brzycki.
   El número de series no influye: el máximo se estima siempre desde la mejor serie.
+- **El RPE entra en el cálculo.** Las fórmulas asumen una serie llevada al fallo, así
+  que sin RPE el resultado es un mínimo. Al indicarlo se cuentan las repeticiones en
+  reserva (RPE 8 = quedaban 2, así que la serie pesa como una de 5 al límite), lo que
+  reproduce la tabla de RPE de Reactive Training Systems. En los olímpicos solo cuenta
+  la mitad del margen, porque ahí el RPE mide técnica tanto como esfuerzo.
 
 ## Instalarla en el celular
 
