@@ -216,6 +216,7 @@ tbody tr.hi{background:rgba(255,107,53,.08)}
         <button class="btn ghost sm" id="pctCancel">Cancelar</button>
       </div>
       <div class="tiny mt">Se guarda con fecha, así queda en tu historial de progreso.</div>
+      <div id="pctMaxList"></div>
     </div>
   </div>
 
@@ -452,7 +453,7 @@ const DEFAULT_STATE = {
 };
 
 let S = loadState();
-let UI = { pct:"snatch", prog:"snatch", pctStep:5 };
+let UI = { pct:"snatch", prog:"snatch", pctStep:5, editSess:null };
 
 function loadState(){
   try{
@@ -753,6 +754,28 @@ function liftChips(host, current, onPick){
   $$("[data-l]", host).forEach(b=> b.onclick = ()=>onPick(b.dataset.l));
 }
 
+/* Los 1RM guardados, con su fecha y su ✕: un número mal escrito tenía
+   que poder quitarse, porque si no deforma la gráfica de progreso. */
+function renderMaxList(){
+  const host = $("#pctMaxList");
+  const h = (S.maxes[UI.pct] || []);
+  if(!h.length){ host.innerHTML = ""; return; }
+  const orden = h.map((e,i)=>({e, i})).sort((a,b)=> a.e.d < b.e.d ? 1 : -1);
+  host.innerHTML = '<h3 class="mt">Guardados</h3>' + orden.map(({e,i})=>
+    '<div class="row" style="margin-bottom:6px">'+
+      '<b class="mono" style="flex:0 0 auto">'+fmt(e.w)+" "+U()+"</b>"+
+      '<span class="tiny">'+fmtDate(e.d)+'</span><div class="sp"></div>'+
+      '<button class="btn sm ghost danger" data-mdel="'+i+'" style="padding:4px 9px">✕</button>'+
+    "</div>").join("");
+  $$("[data-mdel]", host).forEach(b=> b.onclick = ()=>{
+    const arr = S.maxes[UI.pct];
+    arr.splice(+b.dataset.mdel, 1);
+    if(!arr.length) delete S.maxes[UI.pct];
+    save(); renderPct();
+    $("#pctEditBox").style.display = "block";
+    toast("1RM eliminado");
+  });
+}
 function renderPct(){
   liftChips($("#pctChips"), UI.pct, id=>{ UI.pct = id; renderPct(); });
   const m = current1RM(UI.pct);
@@ -763,6 +786,7 @@ function renderPct(){
   $("#pctEditBox").style.display = "none";
   $("#pctNew").value = m? m.w : "";
   $("#pctNewDate").value = today();
+  renderMaxList();
 
   const body = $("#pctBody");
   if(!m){ body.innerHTML = '<tr><td colspan="4"><div class="empty" style="padding:18px"><span class="ico">📏</span>Sin 1RM todavía</div></td></tr>'; }
@@ -834,12 +858,14 @@ $("#e1rpe").addEventListener("input", drawEst);
 /* ============================================================
    REGISTRAR
    ============================================================ */
-function liftOptions(sel){
+function liftOptionsHTML(sel){
   const groups = {};
   S.lifts.forEach(l=> (groups[l.g||"Otros"] = groups[l.g||"Otros"]||[]).push(l));
-  sel.innerHTML = Object.entries(groups).map(([g,ls])=>
-    "<optgroup label=\""+esc(g)+"\">"+ls.map(l=>'<option value="'+l.id+'">'+esc(l.n)+"</option>").join("")+"</optgroup>").join("");
+  return Object.entries(groups).map(([g,ls])=>
+    "<optgroup label=\""+esc(g)+"\">"+ls.map(l=>
+      '<option value="'+l.id+'"'+(l.id===sel?" selected":"")+">"+esc(l.n)+"</option>").join("")+"</optgroup>").join("");
 }
+function liftOptions(el){ el.innerHTML = liftOptionsHTML(el.value); }
 function renderLog(){
   if(!S.draft) S.draft = {d:null, note:"", sets:[]};
   liftOptions($("#lgLift"));
@@ -937,6 +963,62 @@ function sessionBodyHTML(s){
       (rpe? '<span class="pill acc">RPE '+rpe+"</span>":"")+"</div>";
   }).join("");
 }
+/* Edición de una sesión ya guardada: cada serie por separado, para poder
+   corregir el peso que se metió mal sin borrar el entrenamiento entero. */
+function sessionEditHTML(s){
+  return '<label class="fld"><span>Fecha</span><input type="date" id="edD" value="'+s.d+'"></label>'+
+    '<div class="row tiny" style="gap:6px;margin-bottom:4px">'+
+      '<span style="flex:1">Movimiento</span><span style="flex:0 0 66px">Peso</span>'+
+      '<span style="flex:0 0 50px">Reps</span><span style="flex:0 0 56px">RPE</span>'+
+      '<span style="flex:0 0 32px"></span></div>'+
+    (s.sets.length ? s.sets.map((st,i)=>
+      '<div class="row" style="gap:6px;margin-bottom:6px">'+
+        '<select data-edl="'+i+'" style="flex:1;font-size:13px;padding:8px 10px">'+liftOptionsHTML(st.l)+"</select>"+
+        '<input type="number" data-edw="'+i+'" value="'+st.w+'" step="0.5" inputmode="decimal" style="flex:0 0 66px;padding:8px">'+
+        '<input type="number" data-edr="'+i+'" value="'+st.r+'" step="1" inputmode="numeric" style="flex:0 0 50px;padding:8px">'+
+        '<input type="number" data-edp="'+i+'" value="'+(st.rpe==null?"":st.rpe)+'" step="0.5" inputmode="decimal" placeholder="—" style="flex:0 0 56px;padding:8px">'+
+        '<button class="btn sm ghost danger" data-edx="'+i+'" style="flex:0 0 32px;padding:6px 0">✕</button>'+
+      "</div>").join("") : '<div class="tiny">No queda ninguna serie. Al guardar se eliminará la sesión.</div>')+
+    '<label class="fld mt"><span>Notas</span><textarea id="edN">'+esc(s.note||"")+"</textarea></label>"+
+    '<div class="row"><button class="btn pri sm" id="edSave" style="flex:1">Guardar cambios</button>'+
+    '<button class="btn ghost sm" id="edCancel">Cancelar</button></div>';
+}
+function bindSessionEdit(){
+  if(!UI.editSess) return;
+  const s = S.sessions.find(x=>x.id === UI.editSess);
+  if(!s){ UI.editSess = null; return; }
+
+  $$("[data-edx]").forEach(b=> b.onclick = ()=>{
+    s.sets.splice(+b.dataset.edx, 1);
+    save(); renderHist();
+  });
+  const cancel = $("#edCancel");
+  if(cancel) cancel.onclick = ()=>{ UI.editSess = null; renderHist(); };
+
+  const guardar = $("#edSave");
+  if(guardar) guardar.onclick = ()=>{
+    const nuevas = [];
+    $$("[data-edw]").forEach(inp=>{
+      const i = inp.dataset.edw;
+      const w = num(inp.value);
+      const r = num($('[data-edr="'+i+'"]').value);
+      const p = num($('[data-edp="'+i+'"]').value);
+      const l = $('[data-edl="'+i+'"]').value;
+      if(isFinite(w) && w>0 && isFinite(r) && r>=1)
+        nuevas.push({l, w, r, rpe: isFinite(p)? p : null});
+    });
+    if(!nuevas.length){
+      if(!confirm("Sin series válidas la sesión se elimina. ¿Continuar?")) return;
+      S.sessions = S.sessions.filter(x=>x.id !== s.id);
+      UI.editSess = null; save(); renderHist(); toast("Sesión eliminada");
+      return;
+    }
+    s.sets = nuevas;
+    s.d    = $("#edD").value || s.d;
+    s.note = $("#edN").value || "";
+    UI.editSess = null; save(); renderHist(); toast("Cambios guardados");
+  };
+}
 function renderHist(){
   const ss = S.sessions.slice().sort((a,b)=>a.d<b.d?1:-1);
   const d30 = ss.filter(s=>daysAgo(s.d)<=30);
@@ -946,13 +1028,19 @@ function renderHist(){
     '<div class="stat"><div class="k">Series 30d</div><div class="v">'+d30.reduce((t,s)=>t+s.sets.length,0)+'</div><div class="s">total</div></div>'+
     '<div class="stat"><div class="k">Racha</div><div class="v">'+(ss.length? relDate(ss[0].d).replace("hace ","") : "—")+'</div><div class="s">último</div></div>';
 
-  $("#histList").innerHTML = ss.length ? ss.map(s=>
-    '<details class="sess"><summary><b>'+fmtDate(s.d)+"</b>"+
+  $("#histList").innerHTML = ss.length ? ss.map(s=>{
+    const editando = UI.editSess === s.id;
+    return '<details class="sess"'+(editando?" open":"")+'><summary><b>'+fmtDate(s.d)+"</b>"+
       '<span class="tiny">'+relDate(s.d)+'</span><div class="sp"></div>'+
       '<span class="tiny mono">'+s.sets.length+" ser · "+fmt(Math.round(tonnage(s)))+" "+U()+"</span></summary>"+
-      '<div class="body">'+sessionBodyHTML(s)+
-      (s.note? '<div class="tiny mt" style="font-style:italic">“'+esc(s.note)+'”</div>':"")+
-      '<button class="btn sm ghost danger mt" data-dels="'+esc(s.id)+'">Eliminar sesión</button></div></details>').join("")
+      '<div class="body">'+
+      (editando ? sessionEditHTML(s)
+                : sessionBodyHTML(s)+
+                  (s.note? '<div class="tiny mt" style="font-style:italic">“'+esc(s.note)+'”</div>':"")+
+                  '<div class="row mt"><button class="btn sm" data-edits="'+esc(s.id)+'">Editar</button>'+
+                  '<button class="btn sm ghost danger" data-dels="'+esc(s.id)+'">Eliminar sesión</button></div>')+
+      "</div></details>";
+  }).join("")
     : '<div class="empty"><span class="ico">📖</span>Tu historial aparecerá aquí.</div>';
 
   $$("[data-dels]").forEach(b=> b.onclick = ()=>{
@@ -960,6 +1048,8 @@ function renderHist(){
     S.sessions = S.sessions.filter(x=>x.id !== b.dataset.dels);
     save(); renderHist(); toast("Sesión eliminada");
   });
+  $$("[data-edits]").forEach(b=> b.onclick = ()=>{ UI.editSess = b.dataset.edits; renderHist(); });
+  bindSessionEdit();
 }
 
 /* ============================================================
@@ -1076,7 +1166,7 @@ function drawDiag(){
 /* ============================================================
    AJUSTES
    ============================================================ */
-const APP_VER = "2026.09.09-2";
+const APP_VER = "2026.09.09-3";
 function renderSet(){
   $("#stVer").textContent = "versión " + APP_VER;
   $("#stUpd").onclick = ()=> buscarActualizacion($("#stUpd"));

@@ -153,6 +153,59 @@
   eq("sesiones en historial", $$("#histList details").length, 2);
   ok("stats de historial",    $("#histStats").textContent.indexOf("Sesiones") >= 0);
 
+  // ---- editar una sesión ya guardada ----
+  // este bloque usa datos propios y devuelve el estado al salir,
+  // para no romper las pruebas que vienen después
+  const _sesiones = S.sessions, _maxBsq = S.maxes.bsq;
+  S.sessions = [{id:"ed1", d:"2026-09-01", note:"nota vieja",
+                 sets:[{l:"bsq", w:145, r:3, rpe:8}, {l:"bsq", w:145, r:3, rpe:8}]}];
+  UI.editSess = null;
+  go("hist");
+  ok("hay boton de editar", !!$('[data-edits="ed1"]'));
+  $('[data-edits="ed1"]').click();
+  eq("entra en modo edicion", UI.editSess, "ed1");
+  eq("una fila por serie",   $$("[data-edw]").length, 2);
+  // corregir el peso de la primera serie y la fecha
+  setVal('[data-edw="0"]', 150);
+  setVal('[data-edr="0"]', 2);
+  setVal('[data-edp="0"]', 9);
+  setVal("#edD", "2026-09-02");
+  $("#edN").value = "nota nueva";
+  $("#edSave").click();
+  eq("sale del modo edicion", UI.editSess, null);
+  eq("peso corregido",       S.sessions[0].sets[0].w, 150);
+  eq("reps corregidas",      S.sessions[0].sets[0].r, 2);
+  eq("rpe corregido",        S.sessions[0].sets[0].rpe, 9);
+  eq("la otra serie intacta", S.sessions[0].sets[1].w, 145);
+  eq("fecha corregida",      S.sessions[0].d, "2026-09-02");
+  eq("nota corregida",       S.sessions[0].note, "nota nueva");
+  eq("sigue habiendo 2 series", S.sessions[0].sets.length, 2);
+
+  // borrar una sola serie sin perder la sesión
+  $('[data-edits="ed1"]').click();
+  $('[data-edx="1"]').click();
+  eq("queda una serie",      S.sessions[0].sets.length, 1);
+  eq("la sesion sobrevive",  S.sessions.length, 1);
+  UI.editSess = null;
+
+  // ---- borrar un 1RM mal metido ----
+  S.maxes.bsq = [{d:"2026-08-01", w:150}, {d: today(), w:1670}];
+  UI.pct = "bsq";
+  go("pct");
+  eq("dos 1RM guardados",    $$("[data-mdel]").length, 2);
+  eq("el erroneo manda",     current1RM("bsq").w, 1670);
+  const errIdx = S.maxes.bsq.findIndex(e=>e.w === 1670);
+  $('[data-mdel="'+errIdx+'"]').click();
+  eq("queda un 1RM",         S.maxes.bsq.length, 1);
+  eq("vuelve el correcto",   current1RM("bsq").w, 150);
+  // borrar el ultimo deja el movimiento sin 1RM declarado
+  $('[data-mdel="0"]').click();
+  ok("sin 1RM declarado",    !S.maxes.bsq);
+  // estado restaurado
+  S.sessions = _sesiones;
+  if(_maxBsq) S.maxes.bsq = _maxBsq; else delete S.maxes.bsq;
+  UI.pct = "snatch";
+
   // ---- ajustes: cambiar equipo ----
   go("set");
   setVal("#stBar", 15);

@@ -10,7 +10,7 @@
  * Antes esto era «copia primero» para todo, y la app instalada no se
  * actualizaba nunca.
  */
-const VERSION = "2026.09.09-2";
+const VERSION = "2026.09.09-3";
 const CACHE   = "barra-" + VERSION;
 const ASSETS  = ["./", "./index.html", "./manifest.json", "./icon.svg", "./icon-maskable.svg"];
 
