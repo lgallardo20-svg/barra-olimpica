@@ -46,8 +46,14 @@
 
   // ---- 1RM estimado ----
   eq("1 rep = el peso",       est1RM(100, 1, "snatch"), 100);
-  near("3 reps arranque",     est1RM(100, 3, "snatch"), 108.7, 0.2);
-  eq("olimpico usa la tabla", est1RM(100, 5, "snatch"), 100 / REP_PCT[5]);
+  near("3 reps arranque",     est1RM(100, 3, "snatch"), 114.9, 0.2);
+  eq("olimpico usa su propia tabla", est1RM(100, 5, "snatch"), 100 / OLY_PCT[5]);
+  ok("olimpico estima mas que la tabla de fuerza", est1RM(100, 3, "snatch") > 100 / REP_PCT[3],
+     "oly=" + est1RM(100,3,"snatch").toFixed(1) + " fuerza=" + (100/REP_PCT[3]).toFixed(1));
+  near("triple de arranque al 87%", est1RM(80, 3, "snatch"), 92, 0.5);
+  const rgT = est1RMRange(80, 3, "snatch");
+  ok("el rango contiene la estimacion", rgT.lo < rgT.e && rgT.e < rgT.hi);
+  ok("rango de 3 reps es +-3%", Math.abs(rgT.hi/rgT.e - 1.03) < 1e-9, (rgT.hi/rgT.e).toFixed(4));
   near("fuerza promedia 3 formulas", est1RM(100, 5, "bsq"),
        (100/REP_PCT[5] + 100*(1+5/30) + 100*36/32) / 3, 1e-9);
   ok("mas reps, mas 1RM",     est1RM(100, 5, "bsq") > est1RM(100, 3, "bsq"));
@@ -156,8 +162,9 @@
   S.maxes.snatch = [{d:"2026-05-01", w:88}, {d: today(), w:95}];
   S.sessions.push({id:"flojo", d: today(), note:"", sets:[{l:"snatch", w:60, r:1, rpe:null}]});
   go("prog");
-  ok("delta 90d positivo",   $("#prDelta").textContent.indexOf("+7") >= 0, $("#prDelta").textContent);
-  eq("mejor marca ignora el dia flojo", $("#prBest").textContent, "95");
+  ok("delta 90d positivo",   $("#prDelta").textContent.indexOf("+9") >= 0, $("#prDelta").textContent);
+  // el doble de 90 kg estima 97: por encima del 95 declarado, y el dia flojo no baja nada
+  eq("mejor marca ignora el dia flojo", $("#prBest").textContent, "97");
 
   // ---- navegación completa sin errores ----
   ["home","pct","log","hist","prog","set"].forEach(v => {

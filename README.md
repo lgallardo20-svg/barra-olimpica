@@ -23,10 +23,13 @@ Dos decisiones que conviene conocer:
 - **El redondeo respeta tu gimnasio.** «A cargar» nunca propone un peso que no puedas
   montar con los discos que declaraste en Ajustes, y los muestra como los cargarías:
   los más pesados primero.
-- **Las estimaciones de 1RM son conservadoras en los olímpicos.** En arranque, cargada
-  y envión se usa la tabla de coeficientes por repeticiones y se avisa a partir de
-  3 reps, porque ahí la serie mide técnica y aguante, no fuerza máxima. En sentadillas
-  y press se promedia esa tabla con Epley y Brzycki.
+- **El 1RM se estima con dos tablas distintas.** Las fórmulas clásicas (Epley,
+  Brzycki) y los coeficientes por repeticiones vienen del powerlifting: asumen series
+  al fallo, donde un triple se hace al ~92 % del máximo. En arranque y cargada la serie
+  se corta por técnica mucho antes —un triple ronda el 87 %—, así que los movimientos
+  olímpicos usan su propia tabla y muestran un rango, no un número exacto. En
+  sentadillas y press se sigue promediando la tabla de fuerza con Epley y Brzycki.
+  El número de series no influye: el máximo se estima siempre desde la mejor serie.
 
 ## Instalarla en el celular
 

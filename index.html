@@ -563,21 +563,35 @@ function barHTML(combo){
 }
 
 /* ---------- 1RM ---------- */
-/* Coeficientes de reps para movimientos técnicos: en halterofilia
-   las series largas subestiman mucho el máximo, así que usamos una
-   tabla empírica en lugar de una fórmula lineal. */
+/* Dos tablas distintas, a propósito.
+   Los coeficientes clásicos (y las fórmulas de Epley y Brzycki) vienen
+   del powerlifting: asumen series llevadas al fallo en movimientos de
+   fuerza, donde un triple se hace al ~92% del máximo. En arranque y
+   cargada eso no ocurre: la serie se corta por técnica mucho antes, y un
+   triple ronda el 87%. Aplicar la tabla de fuerza a los olímpicos
+   subestima el máximo alrededor de un 6%. */
 const REP_PCT = {1:1.00, 2:.955, 3:.92, 4:.89, 5:.86, 6:.835, 7:.81, 8:.785, 9:.76, 10:.74};
+const OLY_PCT = {1:1.00, 2:.93,  3:.87, 4:.83, 5:.80, 6:.77,  7:.74, 8:.72,  9:.70, 10:.68};
 const OLY = new Set(["snatch","cj","clean","jerk","psnatch","pclean","hsnatch","hclean"]);
 
+function repPct(r, liftId){
+  const n = Math.min(10, Math.max(1, Math.round(r)));
+  return OLY.has(liftId) ? OLY_PCT[n] : REP_PCT[n];
+}
 function est1RM(w, r, liftId){
   if(!isFinite(w) || !isFinite(r) || r<1) return NaN;
   if(r===1) return w;
+  if(OLY.has(liftId)) return w / repPct(r, liftId);
   const tbl = REP_PCT[Math.min(10, Math.round(r))] || (1 - 0.028*r);
-  const table  = w / tbl;
-  const epley  = w * (1 + r/30);
-  const brzy   = w * 36/(37-r);
-  if(OLY.has(liftId)) return table;                 // técnico → tabla
-  return (table + epley + brzy) / 3;                // fuerza → promedio
+  return (w/tbl + w*(1 + r/30) + w*36/(37-r)) / 3;   // fuerza: promedio de las tres
+}
+/* Margen honesto: estimar desde varias reps nunca da un número exacto,
+   y en los olímpicos la horquilla es más ancha. */
+function est1RMRange(w, r, liftId){
+  const e = est1RM(w, r, liftId);
+  const base = OLY.has(liftId) ? .03 : .02;
+  const unc  = base + .01 * Math.max(0, Math.round(r) - 3);
+  return {e, lo: e*(1-unc), hi: e*(1+unc)};
 }
 function current1RM(liftId){
   const h = (S.maxes[liftId]||[]).slice().sort((a,b)=>a.d<b.d?1:-1);
@@ -761,10 +775,13 @@ function drawEst(){
     (OLY.has(UI.pct)
       ? "En movimientos olímpicos, más de 3 reps mide técnica y aguante, no tu máximo. Tómalo como orientación."
       : "Con más de 5 reps la estimación pierde fiabilidad.")+"</div>" : "";
+  const rg = est1RMRange(w, r, UI.pct);
   out.innerHTML = '<div class="row" style="align-items:baseline"><div class="big" style="font-size:26px">'+fmt(Math.round(e*2)/2)+
     '<span class="unit">'+U()+'</span></div><div class="sp"></div><div class="muted">a cargar: '+fmt(L.total)+" "+U()+"</div></div>"+
-    '<div class="tiny mt">'+fmt(w)+" × "+fmt(r)+" ≈ "+fmt(Math.round(r>10?74:(REP_PCT[Math.round(r)]||.74)*100))+"% de tu máximo"+
-    (OLY.has(UI.pct)?" (tabla para movimientos técnicos)":" (promedio de tabla, Epley y Brzycki)")+"</div>"+warn+
+    '<div class="tiny">entre '+fmt(Math.round(rg.lo*2)/2)+" y "+fmt(Math.round(rg.hi*2)/2)+" "+U()+
+    ", según cómo de al límite fuera la serie</div>"+
+    '<div class="tiny mt">'+fmt(w)+" × "+fmt(r)+" ≈ "+Math.round(repPct(r, UI.pct)*100)+"% de tu máximo"+
+    (OLY.has(UI.pct)?" (tabla de halterofilia)":" (promedio de tabla, Epley y Brzycki)")+"</div>"+warn+
     '<button class="btn sm mt" id="e1apply">Guardar como 1RM de '+esc(lift(UI.pct).n)+"</button>";
   const btn = $("#e1apply");
   if(btn) btn.onclick = ()=>{
