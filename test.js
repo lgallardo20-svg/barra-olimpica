@@ -206,6 +206,12 @@
   }catch(e){ ok("usuario nuevo sin errores", false, e.message); }
   ok("sin 1RM no rompe tabla", $("#pctBody") !== null);
 
+  // ---- version visible en Ajustes ----
+  go("set");
+  ok("muestra la version", $("#stVer").textContent.indexOf(APP_VER) >= 0, $("#stVer").textContent);
+  ok("boton de actualizar", !!$("#stUpd"));
+  eq("la version del sw coincide", APP_VER, "2026.09.09");
+
   console.log("=====RESULTADOS=====");
   R.forEach(l => console.log(l));
   console.log("=====TOTAL: " + (R.length - fails) + "/" + R.length + " ok, " + fails + " fallos=====");
